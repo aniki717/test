@@ -2,7 +2,12 @@ syntax on
 filetype plugin on
 filetype indent on
 
+set guifont=RictyForPowerline-Regular:h14
+
 " set {{{1
+" タブページを常に表示
+set number
+set showtabline=2"
 set title
 set nocompatible
 set noinsertmode
@@ -210,6 +215,10 @@ NeoBundle 'taglist.vim'
 NeoBundle 'Source-Explorer-srcexpl.vim'
 NeoBundle 'SrcExpl'
 NeoBundle 'thinca/vim-ref'
+
+NeoBundle 'Lokaltog/powerline', { 'rtp' : 'powerline/bindings/vim'}
+NeoBundle 'Lokaltog/powerline-fontpatcher'
+NeoBundle 'itchyny/lightline.vim'
 call neobundle#end()
 
 filetype plugin indent on
@@ -289,3 +298,58 @@ if has("cscope")
 	set csverb
 	set cscopequickfix=s-,c-,d-,i-,t-,e-
 endif
+
+
+function! MakeTabLine()
+	let titles = map(range(1, tabpagenr('$')), 's:tabpage_label(v:val)')
+	let sep = ' | '  " タブ間の区切り
+	let tabpages = join(titles, sep) . sep . '%#TabLineFill#%T'
+	let info = ''  " 好きな情報を入れる
+	return tabpages . '%=' . info  " タブリストを左に、情報を右に表示"
+endfunction"
+
+" 各タブページのカレントバッファ名+αを表示
+function! s:tabpage_label(n)
+	" t:title と言う変数があったらそれを使う
+	let title = gettabvar(a:n, 'title')
+	if title !=#''
+		return title
+	endif
+
+	" タブページ内のバッファのリスト
+	let bufnrs = tabpagebuflist(a:n)
+
+	" カレントタブページかどうかでハイライトを切り替える
+	let hi = a:n is tabpagenr() ? '%#TabLineSel#' : '%#TabLine#'
+
+	" バッファが複数あったらバッファ数を表示
+	let no = len(bufnrs)
+	if no is 1
+		let no = ''
+	endif
+	
+	" タブページ内に変更ありのバッファがあったら'+' を付ける
+	let mod = len(filter(copy(bufnrs), 'getbufvar(v:val, "&modified")')) ? '+' : ''
+	let sp = (no . mod) ==# '' ? '' : ' '  " 隙間空ける
+
+	" カレントバッファ
+	let curbufnr = bufnrs[tabpagewinnr(a:n) - 1]  " tabpagewinnr() は 1 origin
+	let fname = pathshorten(bufname(curbufnr))
+
+	let label = no . mod . sp .  fname
+
+	return '%' . a:n . 'T' . hi . label . '%T%#TabLineFill#'
+endfunction
+
+set tabline=%!MakeTabLine()
+
+" カラー設定
+set t_Co=256
+let g:lightline = {
+     \ 'colorscheme': 'wombat',
+     \ 'component': {
+     \   'readonly': '%{&readonly?"x":""}',
+     \ },
+     \ 'separator': { 'left': "\u2b80", 'right': "\u2b82" },
+     \ 'subseparator': { 'left': "\u2b81", 'right': "\u2b83" }
+     \ }
