@@ -2,12 +2,13 @@ syntax on
 filetype plugin on
 filetype indent on
 
-set guifont=RictyForPowerline-Regular:h14
-
 " set {{{1
-" タブページを常に表示
+set ignorecase
+set smartcase
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 set number
-set showtabline=2"
 set title
 set nocompatible
 set noinsertmode
@@ -37,8 +38,8 @@ set statusline=%<%f\ %m%r%h%w%{'['.(&fenc!=''?&fenc:&enc).']['.&ff.']'}%=%l,%c%V
 set showcmd
 set nrformats-=octal
 set tags=./tags,../tags,~/tags
-set viewdir=~/.backup/view
-set backupdir=~/.backup/vim
+set viewdir=/home/ec2-user/ktakahas/.backup/view
+set backupdir=/home/ec2-user/ktakahas/.backup/vim
 set backup
 set foldmethod=marker
 set foldlevel=15
@@ -50,7 +51,7 @@ let g:netrw_liststyle=1
 
 " 自動文字コード判別 {{{1
 set fileencoding=utf-8
-set fileencodings=iso-2022-jp,utf-8,euc-jp,sjis
+set fileencodings=iso-2022-jp,sjis,utf-8,euc-jp
 if has('autocmd')
 	function! AU_ReCheck_FENC()
 		if &fileencoding =~# 'iso-2022-jp' && search("[^\x01-\x7e]", 'n') == 0
@@ -64,7 +65,7 @@ endif
 if has( "autocmd" )
 	autocmd BufWritePre * call UpdateBackupFile()
 	function! UpdateBackupFile()
-		let dir = strftime("~/.backup/vim/%Y/%m/%d", localtime())
+		let dir = strftime("/home/ec2-user/ktakahas/.backup/vim/%Y/%m/%d", localtime())
 		if !isdirectory(dir)
 			let retval = system("mkdir -p ".dir)
 			let retval = system("chown 500:500 ".dir)
@@ -145,9 +146,9 @@ match ZenkakuSpace /　/
 " ファイル毎の設定 {{{1
 if has( "autocmd" )
 	autocmd FileType ruby set ts=2 sw=2 sts=2
-	autocmd FileType actionscript :set dictionary=~/.vim/dict/actionscript3.dict
-	autocmd FileType tex :set dictionary=~/.vim/dict/tex.dict
-	autocmd FileType lecturememo :set dictionary=~/.vim/dict/tex.dict
+	autocmd FileType actionscript :set dictionary=/home/ec2-user/ktakahas/.vim/dict/actionscript3.dict
+	autocmd FileType tex :set dictionary=/home/ec2-user/ktakahas/.vim/dict/tex.dict
+	autocmd FileType lecturememo :set dictionary=/home/ec2-user/ktakahas/.vim/dict/tex.dict
 	set complete+=k
 endif
 
@@ -190,15 +191,15 @@ let g:AutoComplPop_NotEnableAtStartup=1
 """"""""""""""""""""""""""""""
 if has('vim_starting')
 	set nocompatible
-	set runtimepath+=~/.vim/bundle/neobundle.vim/
+	set runtimepath+=/home/ec2-user/ktakahas/.vim/bundle/neobundle.vim/
 endif
-call neobundle#begin(expand('~/.vim/bundle/'))
+call neobundle#begin(expand('/home/ec2-user/ktakahas/.vim/bundle/'))
 NeoBundle 'Shougo/neobundle.vim'
-" NeoBundle 'Shougo/vimproc'
+"NeoBundle 'Shougo/neocomplete'
+"NeoBundle 'Shougo/neocomplcache'
 NeoBundle 'VimClojure'
 NeoBundle 'Shougo/vimshell'
 NeoBundle 'Shougo/unite.vim'
-NeoBundle 'Shougo/neocomplcache'
 NeoBundle 'Shougo/neosnippet'
 NeoBundle 'Shougo/neosnippet-snippets'
 NeoBundle 'jpalardy/vim-slime'
@@ -215,12 +216,12 @@ NeoBundle 'taglist.vim'
 NeoBundle 'Source-Explorer-srcexpl.vim'
 NeoBundle 'SrcExpl'
 NeoBundle 'thinca/vim-ref'
-
-NeoBundle 'Lokaltog/powerline', { 'rtp' : 'powerline/bindings/vim'}
-NeoBundle 'Lokaltog/powerline-fontpatcher'
-NeoBundle 'itchyny/lightline.vim'
-
-NeoBundle 'majutsushi/tagbar'
+NeoBundle 'thinca/vim-quickrun'
+NeoBundle 'Shougo/neosnippet'
+NeoBundle 'Shougo/neosnippet-snippets'
+NeoBundle 'honza/vim-snippets'
+NeoBundle 'toyamarinyon/vim-swift'
+"NeoBundle 'andviro/flake8-vim'
 call neobundle#end()
 
 filetype plugin indent on
@@ -230,9 +231,29 @@ filetype plugin indent on
 NeoBundleCheck
 """"""""""""""""""""""""""""""
 
-
-
-
+if neobundle#is_installed('neocomplete')
+    " neocomplete用設定
+    let g:neocomplete#enable_at_startup = 1
+    let g:neocomplete#enable_ignore_case = 1
+    let g:neocomplete#enable_smart_case = 1
+    if !exists('g:neocomplete#keyword_patterns')
+    	let g:neocomplete#keyword_patterns = {}
+    endif
+    let g:neocomplete#keyword_patterns._ = '\h\w*'
+elseif neobundle#is_installed('neocomplcache')
+    " neocomplcache用設定
+    let g:neocomplcache_enable_at_startup = 1
+    let g:neocomplcache_enable_ignore_case = 1
+    let g:neocomplcache_enable_smart_case = 1
+    if !exists('g:neocomplcache_keyword_patterns')
+        let g:neocomplcache_keyword_patterns = {}
+    endif
+        let g:neocomplcache_keyword_patterns._ = '\h\w*'
+        let g:neocomplcache_enable_camel_case_completion = 1
+        let g:neocomplcache_enable_underbar_completion = 1
+endif
+inoremap <expr><TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>""
 
 " 入力モードで開始する
 let g:unite_enable_start_insert=1
@@ -279,156 +300,49 @@ let g:multi_cursor_use_default_mapping=0
 let g:multi_cursor_next_key='<C-@>'
 let g:multi_cursor_quit_key='<Esc>'
 
+" ctags
+" タグ生成コマンド
+" ctags -h ".pm" -R -f /home/game/git/sg-nouen/pm/Nouen/tagss `pwd`
+" /home/ec2-user/ktakahas/fqmn.pl /home/game/git/sg-nouen/pm/Nouen/tagss /home/game/git/sg-nouen/pm > /home/game/git/sg-nouen/pm/Nouen/tags
+"let g:neocomplcache_ctags_arguments_list = {
+"    \ 'perl' : '-R -h ".pm"',
+"    \ }
+"自動でプレビューを表示する。TODO:うざくなってきたら手動にする。またはソースを追う時だけ自動に変更する。
+let g:SrcExpl_RefreshTime   = 0
+"プレビューウインドウの高さ
+let g:SrcExpl_WinHeight     = 9
+"tagsは起動時に自動で作成する
+let g:SrcExpl_UpdateTags    = 0
+" 自動でアップデートしない
+let g:SrcExpl_isUpdateTags = 0
+""マッピング
+let g:SrcExpl_RefreshMapKey = "<Space>"
+let g:SrcExpl_GoBackMapKey  = "<C-b>"
+nmap <F8> :SrcExplToggle<CR>
 " Tlist
-let Tlist_Ctags_Cmd='/usr/local/bin/ctags'
+let Tlist_Ctags_Cmd='/usr/bin/ctags'
 " SrcExplToggle
-let g:SrcExpl_updateTagsCmd = "/usr/local/bin/ctags --sort=foldcase -R ."
+" タグのアップデードコマンド
+let g:SrcExpl_updateTagsCmd = "/usr/bin/ctags --sort=foldcase -R ."
 " NERDTree
-"
-if has("cscope")
-	set csprg=/usr/local/bin/cscope
-	set csto=0
-	set cst
-	set nocsverb
-	" add any database in current directory
-	if filereadable("cscope.out")
-		cs add cscope.out
-		" else add database pointed to by environment 
-	elseif $CSCOPE_DB != ""
-		cs add $CSCOPE_DB
-	endif
-	set csverb
-	set cscopequickfix=s-,c-,d-,i-,t-,e-
-endif
 
+" for snippets
+let g:neosnippet#enable_snipmate_compatibility = 1
+let g:neosnippet#snippets_directory='/home/ec2-user/ktakahas/.vim/vim-snippets, /home/ec2-user/ktakahas/dotfiles/snippets'
 
-function! MakeTabLine()
-	let titles = map(range(1, tabpagenr('$')), 's:tabpage_label(v:val)')
-	let sep = ' | '  " タブ間の区切り
-	let tabpages = join(titles, sep) . sep . '%#TabLineFill#%T'
-	let info = ''  " 好きな情報を入れる
-	return tabpages . '%=' . info  " タブリストを左に、情報を右に表示"
-endfunction"
+" <TAB>: completion.
+imap <expr><TAB> pumvisible() ? "\<C-n>" : neosnippet#jumpable() ?  "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
+smap <expr><TAB> neosnippet#jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
 
-" 各タブページのカレントバッファ名+αを表示
-function! s:tabpage_label(n)
-	" t:title と言う変数があったらそれを使う
-	let title = gettabvar(a:n, 'title')
-	if title !=#''
-		return title
-	endif
+" Plugin key-mappings.
+imap <C-k> <Plug>(neosnippet_expand_or_jump)
+smap <C-k> <Plug>(neosnippet_expand_or_jump)"
 
-	" タブページ内のバッファのリスト
-	let bufnrs = tabpagebuflist(a:n)
-
-	" カレントタブページかどうかでハイライトを切り替える
-	let hi = a:n is tabpagenr() ? '%#TabLineSel#' : '%#TabLine#'
-
-	" バッファが複数あったらバッファ数を表示
-	let no = len(bufnrs)
-	if no is 1
-		let no = ''
-	endif
-	
-	" タブページ内に変更ありのバッファがあったら'+' を付ける
-	let mod = len(filter(copy(bufnrs), 'getbufvar(v:val, "&modified")')) ? '+' : ''
-	let sp = (no . mod) ==# '' ? '' : ' '  " 隙間空ける
-
-	" カレントバッファ
-	let curbufnr = bufnrs[tabpagewinnr(a:n) - 1]  " tabpagewinnr() は 1 origin
-	let fname = pathshorten(bufname(curbufnr))
-
-	let label = no . mod . sp .  fname
-
-	return '%' . a:n . 'T' . hi . label . '%T%#TabLineFill#'
-endfunction
-
-set tabline=%!MakeTabLine()
-
-" カラー設定
-set t_Co=256
-"let g:lightline = {
-"     \ 'colorscheme': 'wombat',
-"     \ 'component': {
-"     \   'readonly': '%{&readonly?"x":""}',
-"     \ },
-"     \ 'separator': { 'left': "\u2b80", 'right': "\u2b82" },
-"     \ 'subseparator': { 'left': "\u2b81", 'right': "\u2b83" }
-"     \ }
-
-let g:lightline = {
-\ 'colorscheme': 'powerline',
-\ 'mode_map': {'c': 'NORMAL'},
-\ 'active': {
-\   'left': [ ['mode', 'paste'], ['fugitive', 'filename', 'cakephp', 'currenttag', 'anzu'] ]
-\ },
-\ 'component': {
-\   'lineinfo': ' %3l:%-2v',
-\ },
-\ 'component_function': {
-\   'modified': 'MyModified',
-\   'readonly': 'MyReadonly',
-\   'fugitive': 'MyFugitive',
-\   'filename': 'MyFilename',
-\   'fileformat': 'MyFileformat',
-\   'filetype': 'MyFiletype',
-\   'fileencoding': 'MyFileencoding',
-\   'mode': 'MyMode',
-\   'anzu': 'anzu#search_status',
-\   'currenttag': 'MyCurrentTag',
-\   'cakephp': 'MyCakephp',
-\ },
-\ 'separator':    { 'left': ' ', 'right': ' ' },
-\ 'subseparator': { 'left': ' ', 'right': ' ' },
+let g:quickrun_config = {
+\ 'swift' : {
+\  'outputter/buffer/split' : ":botright",
+\ }
 \ }
 
-function! MyModified()
-	return &ft =~ 'help\|vimfiler\|gundo' ? '' : &modified ? '+' : &modifiable ? '' : '-'
-endfunction
-
-function! MyReadonly()
-	return &ft !~? 'help\|vimfiler\|gundo' && &readonly ? ' ' : ''
-endfunction
-
-function! MyFilename()
-	return ('' != MyReadonly() ? MyReadonly() . ' ' : '') .
-				\ (&ft == 'vimfiler' ? vimfiler#get_status_string() :
-				\  &ft == 'unite' ? unite#get_status_string() :
-				\  &ft == 'vimshell' ? vimshell#get_status_string() :
-				\ '' != expand('%:t') ? expand('%:t') : '[No Name]') .
-				\ ('' != MyModified() ? ' ' . MyModified() : '')
-endfunction
-
-function! MyFugitive()
-	try
-		if &ft !~? 'vimfiler\|gundo' && exists('*fugitive#head') && strlen(fugitive#head())
-			return ' ' . fugitive#head()
-		endif
-	catch
-	endtry
-	return ''
-endfunction
-
-function! MyFileformat()
-	return winwidth(0) > 70 ? &fileformat : ''
-endfunction
-
-function! MyFiletype()
-	return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype : 'no ft') : ''
-endfunction
-
-function! MyFileencoding()
-	return winwidth(0) > 70 ? (strlen(&fenc) ? &fenc : &enc) : ''
-endfunction
-
-function! MyMode()
-	return winwidth(0) > 60 ? lightline#mode() : ''
-endfunction
-
-function! MyCurrentTag()
-	return tagbar#currenttag('%s ', '')
-endfunction
-
-function! MyCakephp()
-	return exists('*cake#buffer') ? cake#buffer('type') : ''
-endfunction
+"let g:syntastic_python_checkers = ["flake8"]
