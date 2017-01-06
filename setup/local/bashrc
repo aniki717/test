@@ -1,19 +1,19 @@
 export locale=ja_JP.UTF-8
 export LANG=ja_JP.UTF-8
-export LESSCHARSET=dos
+export LESSCHARSET=utf-8
 ## 新しく作られたファイルのパーミッションがつねに 644 になるようにする。基本。
 umask 022
 ## core ファイルを作らせないようにする。これも基本。
 ulimit -c 0
 ## 環境変数の設定
 # man とかを見るときはいつも less を使う。
-export PAGER=less
+#export PAGER=less
 # less のステータス行にファイル名と行数、いま何%かを表示するようにする。
-export LESS='-X -i -P ?f%f:(stdin).  ?lb%lb?L/%L..  [?eEOF:?pb%pb\%..]'
+#export LESS='-X -i -P ?f%f:(stdin).  ?lb%lb?L/%L..  [?eEOF:?pb%pb\%..]'
 # すこし修正した lesspipe.sh を使っているので。
 # export LESSOPEN="| $HOME/bin/lesspipe.sh %s"
 # これを設定しないと日本語がでない less もあるので一応入れておく。
-export JLESSCHARSET=japanese-ujis
+#export JLESSCHARSET=japanese-ujis
 # rsync では ssh を使う。
 export RSYNC_RSH=ssh
 # cvs では ssh を使う。
@@ -308,9 +308,13 @@ alias pm='cd /home/game/git/sg-nouen/pm/Nouen'
 alias temp='cd /home/game/git/sg-nouen/template/_system/nouen'
 alias temps='cd /home/game/git/sg-nouen/template.smart/_system/nouen'
 alias tempo='cd /home/game/git/sg-nouen/template.ope/Nouen'
-alias sdev01='ssh -i ".ssh/sl2dev-ktakahas.pem" ec2-user@ec2-52-196-216-169.ap-northeast-1.compute.amazonaws.com'
-alias sdev02='ssh -i ".ssh/sl2dev-ktakahas.pem" ec2-user@ec2-52-199-242-66.ap-northeast-1.compute.amazonaws.com'
-alias sdev_common01='ssh -i ".ssh/sl2dev-ktakahas.pem" ktakahas@ec2-52-199-116-235.ap-northeast-1.compute.amazonaws.com'
+alias sdev01='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ec2-user@ec2-52-196-216-169.ap-northeast-1.compute.amazonaws.com'
+alias sdev02='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ec2-user@ec2-52-199-242-66.ap-northeast-1.compute.amazonaws.com'
+alias sdev_common01='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ktakahas@ec2-52-199-116-235.ap-northeast-1.compute.amazonaws.com'
+
+alias graph='git log --graph --oneline --decorate=full'
+alias gl='git log --graph --date=short'
+alias gs='git -c color.ui=always status | less -REX'
 
 # 補完の設定。あまり詳しくは設定してない。
 complete -d cd
