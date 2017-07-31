@@ -312,6 +312,9 @@ alias sdev01='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ec2-user@ec2-52-196-216-169.a
 alias sdev02='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ec2-user@ec2-52-199-242-66.ap-northeast-1.compute.amazonaws.com'
 alias sdev_common01='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ktakahas@ec2-52-199-116-235.ap-northeast-1.compute.amazonaws.com'
 
+alias so01='ssh -i ".ssh/ktakahas.pem" ec2-user@ec2-54-250-157-96.ap-northeast-1.compute.amazonaws.com'
+alias so02='ssh -i ".ssh/ktakahas.pem" ec2-user@ec2-54-250-239-113.ap-northeast-1.compute.amazonaws.com'
+
 alias graph='git log --graph --oneline --decorate=full'
 alias gl='git log --graph --date=short'
 alias gs='git -c color.ui=always status | less -REX'
