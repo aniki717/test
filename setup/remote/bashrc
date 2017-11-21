@@ -321,6 +321,8 @@ alias db_sdev04_s2='mysql -h sdev004.chzsucxivjyp.ap-northeast-1.rds.amazonaws.c
 alias graph='git log --graph --oneline --decorate=full'
 alias gl='git log --graph --date=short'
 alias gs='git -c color.ui=always status | less -REX'
+alias gb='git branch'
+alias gbr='git branch -r'
 
 
 # 補完の設定。あまり詳しくは設定してない。
