@@ -325,6 +325,7 @@ alias gl='git log --graph --date=short'
 alias gs='git -c color.ui=always status | less -REX'
 alias gb='git branch'
 alias gbr='git branch -r'
+alias gf='git fetch --prune'
 
 
 # 補完の設定。あまり詳しくは設定してない。
