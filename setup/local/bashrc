@@ -318,6 +318,9 @@ alias so02='ssh -A -i ".ssh/ktakahas.pem" ec2-user@ec2-54-250-239-113.ap-northea
 alias graph='git log --graph --oneline --decorate=full'
 alias gl='git log --graph --date=short'
 alias gs='git -c color.ui=always status | less -REX'
+alias gb='git branch'
+alias gbr='git branch --remote'
+alias gf='git fetch --prune'
 
 # 補完の設定。あまり詳しくは設定してない。
 complete -d cd
