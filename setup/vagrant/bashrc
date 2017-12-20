@@ -1,0 +1,194 @@
+export locale=ja_JP.UTF-8
+export LANG=ja_JP.UTF-8
+export LESSCHARSET=utf-8
+## 新しく作られたファイルのパーミッションがつねに 644 になるようにする。基本。
+umask 022
+## core ファイルを作らせないようにする。これも基本。
+ulimit -c 0
+## 環境変数の設定
+# rsync では ssh を使う。
+export RSYNC_RSH=ssh
+
+# 環境変数 LANG を消去する。日本語メッセージを出してほしくないため。
+unset LANG
+
+export PYTHONPATH=~/lib/python:.
+# デフォルトのパス
+PATH=~/bin:/usr/local/bin:/usr/X11R6/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
+
+# "." コマンドでシェルスクリプトを実行するときは混乱するので PATH を検索させない。
+shopt -u sourcepath
+
+# bashオプション設定
+
+# EOF (Ctrl-D) 入力は 10回まで許可。
+IGNOREEOF=10
+# 履歴のサイズ
+HISTSIZE=50000
+HISTFILESIZE=50000
+
+# 履歴ファイルを上書きではなく追加する。
+# 複数のホストで同時にログインすることがあるので、上書きすると危険だ。
+shopt -s histappend
+# "!"をつかって履歴上のコマンドを実行するとき、
+# 実行するまえに必ず展開結果を確認できるようにする。
+shopt -s histverify
+# 履歴の置換に失敗したときやり直せるようにする。
+shopt -s histreedit
+# 端末の画面サイズを自動認識。
+shopt -s checkwinsize
+# "@" のあとにホスト名を補完させない。
+shopt -u hostcomplete
+# つねにパス名のテーブルをチェックする。
+shopt -s checkhash
+# なにも入力してないときはコマンド名を補完しない。
+# (メチャクチャ候補が多いので。)
+shopt -s no_empty_cmd_completion
+
+# i: 直前の履歴 30件を表示する。引数がある場合は過去 1000件を検索する。
+# (history で履歴全部を表示させると多すぎるので)
+function i {
+	if [ "$1" ]; then history 1000 | grep "$@"; else history 30; fi
+}
+# I: 直前の履歴 30件を表示する。引数がある場合は過去のすべてを検索する。
+function I {
+	if [ "$1" ]; then history | grep "$@"; else history 30; fi
+}
+
+# GNU screen 用のコマンド。引数を screen のステータス行に表示。
+function dispstatus { 
+	if [[ "$STY" ]]; then echo -en "\033k$1\033\134"; fi 
+}
+
+# 端末・プロンプトの設定
+
+# ホスト名とユーザ名の先頭 2文字をとりだす。全部だと長いので。
+h2=`expr $HOSTNAME : '\(..\).*'`
+u2=`expr $USER : '\(..\).*'`
+# 現在のホストによってプロンプトの色を変える。
+case "$HOSTNAME" in
+apple*) col=31;;  # 赤
+mango*) col=36;;  # 水色
+grape*) col=32;;  # 緑
+giko*)  col=33;;  # 黄
+*) col=1;; # それ以外のホストでは強調表示
+esac
+if [[ "$EMACS" ]]; then
+# emacs の shell モードでは制御文字を使わない簡単なプロンプト
+stty -echo nl
+PS1="$u2@$h2\w\$ "
+else
+# プロンプトの設定
+if [[ "$SHELLTYPE" = session ]]; then
+# ある端末では短いプロンプトにする。
+PS1='$h2$ ';
+unset SHELLTYPE
+else
+PS1="$u2@$h2\[\e[${col}m\]\w[\!]\$\[\e[m\] "
+#PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
+fi
+# 通常のプロンプト PS1 に加えて PS0 という変数を設定する。
+# (これは bash は何も関知しない、あとで述べる px というコマンドが使う)
+# 通常のプロンプトでは現在のカレントディレクトリのフルパス名を
+# 表示するようになっているが、これが長すぎるときに PS1 と PS0 を
+# 一時的に切り換えて使う。
+PS0="$u2@$h2:\[\e[${col}m\]\W[\!]\$\[\e[m\] "
+
+# 端末の設定
+eval `SHELL=sh tset -sQI`
+stty dec crt erase ^H eof ^D quit ^\\ start ^- stop ^-
+fi
+
+# いろんな関数
+
+# つねに直前のコマンドの終了状態をチェックさせる。
+# もし異常終了した場合は、その状態(数値)を表示する。
+function showexit {
+	local s=$?
+		dispstatus "${PWD/\/home\/vagrant/~}"
+		if [[ $s -eq 0 ]]; then return; fi
+			echo "exit $s"
+}
+PROMPT_COMMAND=showexit
+
+# px: 長いプロンプトと短いプロンプトを切り換える。
+function px {
+	local tmp=$PS1; PS1=$PS0; PS0=$tmp; 
+}
+
+# h: csh における which と同じ。
+function h { command -v $1; }
+
+# wi: whatis の略。指定されたコマンドの実体を表示。
+function wi {
+	case `type -t "$1"` in
+		alias|function) type "$1";;
+		file) L `command -v "$1"`;;
+		function) type "$1";;
+		esac
+}
+
+# 現在実行中のジョブを表示。
+function j { jobs -l; }
+
+# 雑多な手抜き用コマンド。
+function tmp { cd ~/tmp; }
+
+alias vim='/usr/bin/vim -u /home/vagrant/.vimrc'
+alias view='/usr/bin/vim -R '
+
+# エイリアス。
+
+alias ls='ls -F'
+alias ll='ls -o'   # 環境によっては -o はなく、-l を使う。
+alias la='ls -lag'
+# grep では LC_CTYPE はセットしない。遅いから。
+alias g='env -u LC_CTYPE grep -i'
+alias r='env -u LC_CTYPE grep -ir'
+alias G='env -u LC_CTYPE grep'
+alias F='env -u LC_CTYPE fgrep'
+alias c=cat
+# 確認つきファイル操作。rm, mv, cp などのあぶない操作はなるべくこれらを使う。
+# コマンド名を rm や mv などに上書きしないのは、これらのエイリアスが指定されてない環境
+# (root など) でうっかり生の rm などを (-i がついてると思って) 実行してしまうのを防ぐため。
+alias rmi='rm -i'
+alias mvi='mv -i'
+alias cpi='cp -i'
+alias lld='ls -ld'
+alias ..='cd ..'
+alias 644='chmod 644'
+alias 755='chmod 755'
+alias ox='od -Ax -tx1'
+alias nouen='cd /home/game/git/sg-nouen/'
+alias pm='cd /home/game/git/sg-nouen/pm/Nouen'
+alias temp='cd /home/game/git/sg-nouen/template/_system/nouen'
+alias temps='cd /home/game/git/sg-nouen/template.smart/_system/nouen'
+alias tempo='cd /home/game/git/sg-nouen/template.ope/Nouen'
+alias sdev01='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ec2-user@ec2-52-196-216-169.ap-northeast-1.compute.amazonaws.com'
+alias sdev02='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ec2-user@ec2-52-199-242-66.ap-northeast-1.compute.amazonaws.com'
+alias sdev_common01='ssh -A -i ".ssh/sl2dev-ktakahas.pem" ktakahas@ec2-52-199-116-235.ap-northeast-1.compute.amazonaws.com'
+
+alias so01='ssh -A -i ".ssh/ktakahas.pem" ec2-user@ec2-54-250-157-96.ap-northeast-1.compute.amazonaws.com'
+alias so02='ssh -A -i ".ssh/ktakahas.pem" ec2-user@ec2-54-250-239-113.ap-northeast-1.compute.amazonaws.com'
+
+alias graph='git log --graph --oneline --decorate=full'
+alias gl='git log --graph --date=short'
+alias gs='git -c color.ui=always status | less -REX'
+alias gb='git branch'
+alias gbr='git branch --remote'
+alias gf='git fetch --prune'
+
+export PYENV_ROOT=${HOME}/.pyenv
+if [ -d "${PYENV_ROOT}" ]; then
+	export PATH=${PYENV_ROOT}/bin:$PATH
+	eval "$(pyenv init -)"
+	eval "$(pyenv virtualenv-init -)"
+fi
+
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+
+
+source /home/vagrant/git/git/contrib/completion/git-prompt.sh
+source /home/vagrant/git/git/contrib/completion/git-completion.bash
+export PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[34m\]\w\[\033[31m\]$(__git_ps1)\[\033[00m\]\$ '
